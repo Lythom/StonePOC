@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="minion">
+<head>
+    <meta charset="utf-8">
+    <link rel="icon" type="image/png" href="images/favicon.png">
+    <title>My first three.js app</title>
+    <style>
+        body {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+<h1 style="font-family: Alef; font-size: 8rem;color:coral;text-align: center;background-color:#ffffffee;">
+    Lonestone</h1>
+<div style="height: 5000px;">
+
+    <div style="height: 700px;"></div>
+    <div style="height: 500px;background-color: #ffe06a99;padding: 5rem;font-family: Caladea; font-size: 2rem">
+        Minions ipsum aaaaaah me want bananaaa! Tank yuuu! Underweaaar po kass aaaaaah me want bananaaa! Butt
+        tulaliloo. Belloo! poopayee hana dul sae poulet tikka masala tank yuuu! Hana dul sae belloo! Tank yuuu!
+        chasy jeje me want bananaaa! Hana dul sae jeje. Bappleees chasy jeje bananaaaa bee do bee do bee do jeje
+        underweaaar poulet tikka masala tulaliloo. Para tú poulet tikka masala hana dul sae ti aamoo! Me want
+        bananaaa! Jiji tulaliloo aaaaaah poopayee hahaha hahaha. Bananaaaa gelatooo po kass wiiiii. Butt bee do bee
+        do bee do tank yuuu! Bananaaaa jeje ti aamoo! Bee do bee do bee do hahaha daa. Potatoooo bananaaaa ti aamoo!
+        Poopayee gelatooo.
+
+    </div>
+    <div style="height: 1000px;background-color: #2a7fff99;padding: 5rem;font-family: Caladea; font-size: 2rem">
+        Minions ipsum aaaaaah me want bananaaa! Tank yuuu! Underweaaar po kass aaaaaah me want bananaaa! Butt
+        tulaliloo. Belloo! poopayee hana dul sae poulet tikka masala tank yuuu! Hana dul sae belloo! Tank yuuu!
+        chasy jeje me want bananaaa! Hana dul sae jeje. Bappleees chasy jeje bananaaaa bee do bee do bee do jeje
+        underweaaar poulet tikka masala tulaliloo. Para tú poulet tikka masala hana dul sae ti aamoo! Me want
+        bananaaa! Jiji tulaliloo aaaaaah poopayee hahaha hahaha. Bananaaaa gelatooo po kass wiiiii. Butt bee do bee
+        do bee do tank yuuu! Bananaaaa jeje ti aamoo! Bee do bee do bee do hahaha daa. Potatoooo bananaaaa ti aamoo!
+        Poopayee gelatooo.
+
+    </div>
+
+</div>
+<script type="module">
+    // CONFIGURATION {"progress in %": value}
+    const sizeOverScroll = {
+        0: 30,
+        10: 35,
+        50: 35,
+        55: 25,
+        90: 30,
+        100: 30
+    }
+    const positionOverScroll = {
+        0: 0,
+        10: -1.2,
+        50: -1.2,
+        55: 1.3,
+        80: 1.3,
+        90: 0,
+        100: 0,
+    }
+    const displayGround = false
+    const backgroundColor = 0xdddddd
+
+    // CODE
+    import * as THREE from 'https://cdn.skypack.dev/three@0.132.2'
+    import {OBJLoader} from 'https://cdn.skypack.dev/three@0.132.2/examples/jsm/loaders/OBJLoader.js';
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(backgroundColor);
+
+    const camera = new THREE.PerspectiveCamera(30, window.innerWidth / window.innerHeight, 0.25, 100);
+    camera.position.set(0, 1, 10);
+    camera.lookAt(new THREE.Vector3(0, 0, 0));
+
+    const renderer = new THREE.WebGLRenderer({antialias: true});
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    const canvas = document.body.appendChild(renderer.domElement);
+    canvas.style = "position:fixed;left:0;top:0;z-index:-1;"
+
+    const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.7);
+    hemiLight.position.set(0, 20, 0);
+    scene.add(hemiLight);
+
+    const dirLight = new THREE.DirectionalLight(0xffffff, 0.3);
+    dirLight.position.set(0, 20, 10);
+    scene.add(dirLight);
+
+    if (displayGround) {
+        const mesh = new THREE.Mesh(new THREE.PlaneGeometry(2000, 2000), new THREE.MeshPhongMaterial({
+            color: 0x999999,
+            depthWrite: false
+        }));
+        mesh.rotation.x = -Math.PI / 2;
+        scene.add(mesh);
+    }
+    //
+    // const grid = new THREE.GridHelper( 200, 40, 0x000000, 0x000000 );
+    // grid.material.opacity = 0.1;
+    // grid.material.transparent = true;
+    // scene.add( grid );
+
+    camera.position.z = 5;
+
+    let stone = null;
+
+    const loader = new OBJLoader();
+    loader.load(
+        // resource URL
+        "obj/stone.obj",
+
+        // onLoad callback
+        // Here the loaded data is assumed to be an object
+        function (obj) {
+            // Add the loaded object to the scene
+            const pivot = new THREE.Group();
+            pivot.position.set(0.0, 0.0, 0);
+            obj.position.set(1.4, 0, 0);
+            pivot.add(obj);
+            scene.add(pivot)
+            stone = pivot;
+        },
+
+        // onProgress callback
+        function (xhr) {
+            console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+        },
+
+        // onError callback
+        function (err) {
+            console.error(err);
+        }
+    );
+
+    var maxScroll = Math.max(document.body.scrollHeight, document.body.offsetHeight,
+        document.documentElement.clientHeight, document.documentElement.scrollHeight, document.documentElement.offsetHeight) - window.innerHeight
+
+    const sizes = Object.entries(sizeOverScroll);
+    const positions = Object.entries(positionOverScroll);
+
+    function getCurrentValue(progress, sourceArray) {
+        const idx = sourceArray.findIndex(([key]) => parseInt(key, 10) >= progress)
+        const objFrom = sourceArray[Math.max(0, idx - 1)]
+        const objTo = sourceArray[Math.min(sourceArray.length, idx)]
+        const divider = (objTo[0] - objFrom[0])
+        const size = lerp(objFrom[1], objTo[1], divider <= 0 ? 0 : (progress - objFrom[0]) / divider)
+        console.log(objFrom[0] + " → " + progress + " →" + objTo[0] + " = " + (progress - objFrom[0]) / divider)
+        return size;
+    }
+
+    function Update() {
+        const progress = window.scrollY * 100 / maxScroll
+        const size = getCurrentValue(progress, sizes);
+        const position = getCurrentValue(progress, positions);
+
+        if (stone != null) {
+            // stone.rotation.x += 0.01;
+            stone.rotation.y = window.scrollY * 0.003;
+            stone.position.x = position;
+        }
+        if (size !== camera.fov) {
+            camera.fov = size
+            camera.updateProjectionMatrix();
+        }
+
+        // dirLight.color.set(lerpColor(0xffffff, 0xdd0000, Math.abs(Math.sin(window.scrollY*0.001))))
+    }
+
+    function animate() {
+        requestAnimationFrame(animate);
+        Update();
+        renderer.render(scene, camera);
+    }
+
+    animate();
+
+
+    function lerp(value1, value2, amount) {
+        amount = amount < 0 ? 0 : amount;
+        amount = amount > 1 ? 1 : amount;
+        return value1 + (value2 - value1) * amount;
+    }
+</script>
+</body>
+</html>
